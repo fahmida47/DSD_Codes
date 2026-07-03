@@ -1,0 +1,98 @@
+module alu_1bit(
+    input A,
+    input B,
+    input Cin,
+    input [2:0] ALU_Sel,
+
+    output reg ALU_Out,
+    output reg CarryOut
+);
+
+always @(*) begin
+
+    CarryOut = 0;
+
+    case(ALU_Sel)
+
+        3'b000: ALU_Out = A ^ B;                 // XOR
+
+        3'b001: ALU_Out = ~(A ^ B);              // XNOR
+
+        3'b010: ALU_Out = ~(A & B);              // NAND
+
+        3'b011: ALU_Out = ~A;                    // NOT A
+
+        3'b100: ALU_Out = A & (~B);              // A AND NOT B
+
+        3'b101: ALU_Out = (~(A ^ B)) & (A | ~B); // XNOR AND (A OR NOT B)
+
+        3'b110:
+            {CarryOut, ALU_Out} = A + B + Cin;   // Addition
+
+        3'b111:
+            {CarryOut, ALU_Out} = A + (~B) + Cin;// Subtraction
+
+    endcase
+
+end
+
+endmodule
+
+module tb_alu_1bit;
+
+reg A;
+reg B;
+reg Cin;
+reg [2:0] ALU_Sel;
+
+wire ALU_Out;
+wire CarryOut;
+
+alu_1bit uut(
+    .A(A),
+    .B(B),
+    .Cin(Cin),
+    .ALU_Sel(ALU_Sel),
+    .ALU_Out(ALU_Out),
+    .CarryOut(CarryOut)
+);
+
+initial begin
+
+A = 1;
+B = 1;
+Cin = 0;
+
+$display("--------------------------------------------");
+$display("A B Cin Sel | Out Carry");
+$display("--------------------------------------------");
+
+ALU_Sel = 3'b000; #10;
+$display("%b %b  %b  %b   |  %b    %b",A,B,Cin,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel = 3'b001; #10;
+$display("%b %b  %b  %b   |  %b    %b",A,B,Cin,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel = 3'b010; #10;
+$display("%b %b  %b  %b   |  %b    %b",A,B,Cin,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel = 3'b011; #10;
+$display("%b %b  %b  %b   |  %b    %b",A,B,Cin,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel = 3'b100; #10;
+$display("%b %b  %b  %b   |  %b    %b",A,B,Cin,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel = 3'b101; #10;
+$display("%b %b  %b  %b   |  %b    %b",A,B,Cin,ALU_Sel,ALU_Out,CarryOut);
+
+Cin = 0;
+ALU_Sel = 3'b110; #10;
+$display("%b %b  %b  %b   |  %b    %b",A,B,Cin,ALU_Sel,ALU_Out,CarryOut);
+
+Cin = 0;
+ALU_Sel = 3'b111; #10;
+$display("%b %b  %b  %b   |  %b    %b",A,B,Cin,ALU_Sel,ALU_Out,CarryOut);
+
+end
+
+endmodule

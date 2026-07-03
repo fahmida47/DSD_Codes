@@ -1,0 +1,135 @@
+module alu_1bit(
+    input A,
+    input B,
+    input Cin,
+    input [2:0] ALU_Sel,
+
+    output reg ALU_Out,
+    output reg CarryOut
+);
+
+always @(*) begin
+    CarryOut = 0;
+
+    case(ALU_Sel)
+
+        3'b000: ALU_Out = A ^ B;                 
+
+        3'b001: ALU_Out = ~(A ^ B);               
+
+        3'b010: ALU_Out = ~(A & B);                
+
+        3'b011: ALU_Out = ~A;                      
+
+        3'b100: ALU_Out = A & (~B);                
+
+        3'b101: ALU_Out = (~(A ^ B)) & (A | ~B);    
+
+        3'b110:
+            {CarryOut, ALU_Out} = A + B + Cin;     
+
+        3'b111:
+            {CarryOut, ALU_Out} = A + (~B) + Cin;   
+
+    endcase
+end
+
+endmodule
+
+module ALU(
+
+    input [7:0] A,
+    input [7:0] B,
+    input [2:0] ALU_Sel,
+
+    output [7:0] ALU_Out,
+    output CarryOut
+
+);
+
+wire [8:0] C;
+
+assign C[0] = ALU_Sel[0];
+
+genvar i;
+
+generate
+
+for(i=0;i<8;i=i+1)
+begin: ALU_BITS
+
+alu_1bit U(
+
+.A(A[i]),
+.B(B[i]),
+.Cin(C[i]),
+.ALU_Sel(ALU_Sel),
+.ALU_Out(ALU_Out[i]),
+.CarryOut(C[i+1])
+
+);
+
+end
+
+endgenerate
+
+assign CarryOut = C[8];
+
+endmodule
+
+module tb_ALU;
+
+reg [7:0] A;
+reg [7:0] B;
+reg [2:0] ALU_Sel;
+
+wire [7:0] ALU_Out;
+wire CarryOut;
+
+ALU uut(
+
+.A(A),
+.B(B),
+.ALU_Sel(ALU_Sel),
+.ALU_Out(ALU_Out),
+.CarryOut(CarryOut)
+
+);
+
+initial begin
+
+A = 8'b00001111;     
+B = 8'b00001010;     
+
+$display("-------------------------------------------------------");
+$display("A\t\tB\t\tSEL\t      OUT\t\t   Carry");
+$display("-------------------------------------------------------");
+
+ALU_Sel=3'b000; #10;
+$display("%b\t%b\t%b\t%b\t%b",A,B,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel=3'b001; #10;
+$display("%b\t%b\t%b\t%b\t%b",A,B,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel=3'b010; #10;
+$display("%b\t%b\t%b\t%b\t%b",A,B,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel=3'b011; #10;
+$display("%b\t%b\t%b\t%b\t%b",A,B,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel=3'b100; #10;
+$display("%b\t%b\t%b\t%b\t%b",A,B,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel=3'b101; #10;
+$display("%b\t%b\t%b\t%b\t%b",A,B,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel=3'b110; #10;
+$display("%b\t%b\t%b\t%b\t%b",A,B,ALU_Sel,ALU_Out,CarryOut);
+
+ALU_Sel=3'b111; #10;
+$display("%b\t%b\t%b\t%b\t%b",A,B,ALU_Sel,ALU_Out,CarryOut);
+
+
+end
+
+endmodule
